@@ -9,7 +9,6 @@ from einops import rearrange
 
 from torch.jit import Final
 
-from timm.layers import use_fused_attn
 from typing import List
 
 
