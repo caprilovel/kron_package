@@ -2,45 +2,19 @@ import numpy as np
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
+
+
 # from gkpd.tensorops import kron
 # from utils.factorize import factorize
-from typing import Optional
+from typing import Optional, List
 from einops import rearrange
 
 from torch.jit import Final
 
-from typing import List
+from utils.decomposition import factorize
 
 
-def factorize(n: int, bias=0) -> List[int]:
-    # """Return the most average two factorization of n."""
-    for i in range(int(np.sqrt(n)) + 1, 1, -1):
-        if n % i == 0:
-            if bias == 0:
-                return [i, n // i]
-            else:
-                bias -= 1
-    return [n, 1]
 
-
-Kronnecker_group = [[
-    [(16, 10 * 5), (16, 12 * 2)],
-    [(10 * 5, 12 * 2), (12 * 2, 7 * 5)],
-    [(12 * 2, 2), (7 * 5, 5)]
-    ],
-    [[(8, 10), (32, 12)],
-     [(5, 6), (24, 14)],
-     [(4, 2), (21, 5)]
-     ],
-    [[(32, 12), (8, 10)],
-     [(24, 14), (5, 6)],
-        [(21, 5), (4, 2)]
-     ],
-    [[(4, 5), (64, 24)],
-     [(5, 3), (24, 28)],
-     [(4, 2), (21, 5)]
-     ],
-    ]
 
 class KronLinear(nn.Module):
     def __init__(self, in_features, out_features, shape_bias=0, structured_sparse=False, bias=True, rank_rate=0.1, rank=0) -> None:
@@ -218,17 +192,6 @@ class KronLeNet_5(nn.Module):
         return x
 
 
-if __name__ == "__main__":
-    from torchsummary import summary
-    lenet5 = KronLeNet_5()
-    a = torch.randn(1, 1, 28, 28)
-    summary(lenet5, (1, 28, 28), device='cpu')
-    # CALCULATE PARAMS
-    params = 0
-    for name, param in lenet5.named_parameters():
-        print(name, param.shape)
-        params += param.numel()
-    print(params)
     
 class LowRankLinear(nn.Module):
     def __init__(self, in_features, out_features, rank_rate=0.5, bias=True) -> None:
